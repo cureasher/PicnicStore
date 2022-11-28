@@ -16,6 +16,9 @@ class PicnicStoreApplication : Application() {
     companion object {
         private lateinit var appInstance: PicnicStoreApplication
         fun getAppInstance() = appInstance
+        fun applicationContext() : PicnicStoreApplication {
+            return appInstance
+        }
     }
 
     private fun settingScreenPortrait() {
