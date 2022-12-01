@@ -1,6 +1,7 @@
 import com.oh.app.BuildConfig
 import com.oh.app.common.LAST_URL
 import com.oh.app.common.RECIPE_ADDRESS
+import com.oh.app.data.recipe.RecipeInfoData
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -25,5 +26,4 @@ interface RecipeRetrofitService {
             return retrofitService!!
         }
     }
-
 }

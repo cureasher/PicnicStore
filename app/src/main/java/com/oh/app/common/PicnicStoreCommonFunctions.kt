@@ -8,3 +8,6 @@ fun toastMessage(message: String) {
 
 const val RECIPE_ADDRESS = "http://openapi.foodsafetykorea.go.kr/api/"
 const val LAST_URL = "/COOKRCP01/json/"
+
+const val STORE_ADDRESS = "http://openapi.seoul.go.kr:8088/"
+const val STORE_LAST_URL = "/json/CrtfcUpsoInfo/1/50/ / / / /"

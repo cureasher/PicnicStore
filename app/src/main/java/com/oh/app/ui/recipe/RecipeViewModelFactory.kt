@@ -1,5 +1,6 @@
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.oh.app.ui.recipe.RecipeViewModel
 
 @Suppress("UNCHECKED_CAST")
 class RecipeViewModelFactory(private var repository: RecipeRepository): ViewModelProvider.Factory {

@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.oh.app.MainActivity
+import com.oh.app.data.recipe.RecipeInfoData
 import com.oh.app.databinding.RecipeInfoItemBinding
 import com.oh.app.ui.recipe.detail.RecipeDetailActivity
 

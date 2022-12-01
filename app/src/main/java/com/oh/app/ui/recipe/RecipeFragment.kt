@@ -3,7 +3,6 @@ package com.oh.app.ui.recipe
 import RecipeRecyclerAdapter
 import RecipeRepository
 import RecipeRetrofitService
-import RecipeViewModel
 import RecipeViewModelFactory
 import android.os.Bundle
 import android.util.Log
@@ -38,9 +37,9 @@ class RecipeFragment : BaseFragment<RecipeFragmentBinding>() {
             with(binding.recipeList) {
                 run {
                     var activity = activity
-                    val festivalAdapter = RecipeRecyclerAdapter(it, activity as MainActivity)
-                    adapter = festivalAdapter
-                    festivalAdapter
+                    val recipeAdapter = RecipeRecyclerAdapter(it, activity as MainActivity)
+                    adapter = recipeAdapter
+                    recipeAdapter
                 }.refreshRecipeItems()
             }
             binding.progressBar.visibility = View.GONE // 로딩

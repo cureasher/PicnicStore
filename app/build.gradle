@@ -4,20 +4,9 @@ plugins {
     id 'kotlin-parcelize'
 }
 
-def getProperty(String filename, String propName) {
-    def propsFile = rootProject.file(filename)
-    if (propsFile.exists()) {
-        def props = new Properties()
-        props.load(new FileInputStream(propsFile))
-        if (props[propName] != null) {
-            return props[propName]
-        } else {
-            print("No such property " + propName + " in file " + filename)
-        }
-    } else {
-        print(filename + " does not exist!")
-    }
-}
+//local.properties
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 android {
     namespace 'com.oh.app'
@@ -30,7 +19,9 @@ android {
         versionCode 1
         versionName "Oh_App_V_0.9"
 
-        buildConfigField "String", "RCP_API_KEY", "\"${getProperty("local.properties", "rcp_api_key")}\""
+        //key
+        buildConfigField "String", "RCP_API_KEY", properties['rcp_api_key']
+        buildConfigField "String", "STORE_API_KEY", properties['store_api_key']
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -53,7 +44,6 @@ android {
 }
 
 dependencies {
-
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.7.0'

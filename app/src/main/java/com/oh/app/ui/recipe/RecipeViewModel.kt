@@ -1,6 +1,10 @@
+package com.oh.app.ui.recipe
+
+import RecipeRepository
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.oh.app.data.recipe.RecipeInfoData
 import kotlinx.coroutines.*
 
 class RecipeViewModel(private var repository: RecipeRepository) : ViewModel() {
