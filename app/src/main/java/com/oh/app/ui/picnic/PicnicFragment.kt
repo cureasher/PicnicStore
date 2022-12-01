@@ -2,6 +2,7 @@
 
 package com.oh.app.ui.picnic
 
+import StoreViewModelFactory
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -15,14 +16,24 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import com.oh.app.common.toastMessage
+import com.oh.app.data.store.Row
+import com.oh.app.databinding.BottomSheetBinding
 import com.oh.app.databinding.PicnicFragmentBinding
 import com.oh.app.ui.base.BaseFragment
+import com.oh.app.ui.picnic.adapter.StoreListAdapter
+import com.oh.app.ui.picnic.adapter.StoreViewPagerAdapter
+import com.oh.app.ui.picnic.repository.StoreRepository
+import com.oh.app.ui.picnic.repository.StoreRetrofitService
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
@@ -34,6 +45,9 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     private lateinit var mapView: MapView
     var longitude = 0.0
     var latitude = 0.0
+    private var bottomList: List<Row> = emptyList()
+    private lateinit var innerBind: BottomSheetBinding
+    private val storeAdapter = StoreListAdapter()
     override fun getFragmentBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
@@ -53,8 +67,48 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//        checkLocationService()
 
+        val storeViewModel: StoreViewModel = ViewModelProvider(
+            this, StoreViewModelFactory(
+                StoreRepository(StoreRetrofitService.getInstance())
+            )
+        ).get(StoreViewModel::class.java)
+
+        storeViewModel.storeList.observe(viewLifecycleOwner) {
+            with(binding.storeViewPager) {
+                run {
+                    Log.d("로그", "onViewCreated: ${it.StoreInfo.row}")
+                    bottomList = it.StoreInfo.row
+                    adapter = StoreViewPagerAdapter(it.StoreInfo.row)
+                    orientation = ViewPager2.ORIENTATION_HORIZONTAL
+                    storeAdapter
+                }
+            }
+            with(innerBind.recyclerView) {
+                run {
+                    android.util.Log.d("로그", "onViewCreated: $bottomList")
+                    val storeAdapter = StoreRecyclerAdapter(bottomList)
+                    adapter = storeAdapter
+                    storeAdapter
+                }.refreshRecipeItems()
+            }
+        }
+        binding.progressBar.visibility = View.GONE // 로딩
+
+        storeViewModel.errorMessage.observe(viewLifecycleOwner) {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+            Log.e("로그", it)
+        }
+        storeViewModel.isLoading.observe(requireActivity(), Observer {
+            if (it) {
+                binding.progressBar.visibility = View.VISIBLE
+            } else {
+                binding.progressBar.visibility = View.GONE
+            }
+        })
+        storeViewModel.getStoreViewModel()
+
+        innerBind = BottomSheetBinding.inflate(layoutInflater)
         mapView = MapView(context)
         createDefaultMarker(mapView)
 
@@ -110,8 +164,6 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
         taskBSSettingResponse.addOnSuccessListener {
             mapView.currentLocationTrackingMode =
                 MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
-
-
         }
 
         // 위치 정보 설정이 off일 경우

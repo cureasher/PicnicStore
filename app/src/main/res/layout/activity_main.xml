@@ -9,20 +9,21 @@
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
         android:layout_alignParentBottom="true"
-        app:tabIndicator="@null"
-        app:tabBackground="@color/light_blue">
+        android:elevation="20dp"
+        app:tabBackground="@drawable/tablayout_stroke"
+        app:tabIndicator="@null">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:icon="@drawable/shopping_basket"
-            android:textAlignment="textStart"/>
+            android:textAlignment="textStart" />
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:icon="@drawable/restaurant_menu"
-            android:textAlignment="textEnd"/>
+            android:textAlignment="textEnd" />
     </com.google.android.material.tabs.TabLayout>
 
     <FrameLayout
