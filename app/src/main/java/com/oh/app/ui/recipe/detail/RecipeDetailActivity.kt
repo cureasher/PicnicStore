@@ -1,6 +1,5 @@
 package com.oh.app.ui.recipe.detail
 
-import RecipeInfoData
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
@@ -11,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
+import com.oh.app.data.recipe.RecipeInfoData
 import com.oh.app.databinding.RecipeDetailActivityBinding
 
 class RecipeDetailActivity : AppCompatActivity() {
