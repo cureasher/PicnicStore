@@ -21,7 +21,7 @@
         android:layout_width="0dp"
         android:layout_height="100dp"
         android:gravity="center"
-        android:text="여러개의 숙소"
+        android:text="마트 상품 정보"
         android:textColor="@color/black"
         android:textSize="15sp"
         android:textStyle="bold"
