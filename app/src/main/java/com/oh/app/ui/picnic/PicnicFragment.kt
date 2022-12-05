@@ -45,9 +45,11 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     private lateinit var mapView: MapView
     var longitude = 0.0
     var latitude = 0.0
-    private var bottomList: List<Row> = emptyList()
+    private lateinit var mapPOIItem: MapPOIItem
+    private var storeList: List<Row> = emptyList()
     private lateinit var innerBind: BottomSheetBinding
     private val storeAdapter = StoreListAdapter()
+    private var mapPosition = 0
     override fun getFragmentBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
@@ -74,38 +76,7 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
             )
         ).get(StoreViewModel::class.java)
 
-        storeViewModel.storeList.observe(viewLifecycleOwner) {
-            with(binding.storeViewPager) {
-                run {
-                    Log.d("로그", "onViewCreated: ${it.StoreInfo.row}")
-                    bottomList = it.StoreInfo.row
-                    adapter = StoreViewPagerAdapter(it.StoreInfo.row)
-                    orientation = ViewPager2.ORIENTATION_HORIZONTAL
-                    storeAdapter
-                }
-            }
-            with(innerBind.recyclerView) {
-                run {
-                    android.util.Log.d("로그", "onViewCreated: $bottomList")
-                    val storeAdapter = StoreRecyclerAdapter(bottomList)
-                    adapter = storeAdapter
-                    storeAdapter
-                }.refreshRecipeItems()
-            }
-        }
-        binding.progressBar.visibility = View.GONE // 로딩
-
-        storeViewModel.errorMessage.observe(viewLifecycleOwner) {
-            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-            Log.e("로그", it)
-        }
-        storeViewModel.isLoading.observe(requireActivity(), Observer {
-            if (it) {
-                binding.progressBar.visibility = View.VISIBLE
-            } else {
-                binding.progressBar.visibility = View.GONE
-            }
-        })
+        storeObserverSetup(storeViewModel)
         storeViewModel.getStoreViewModel()
 
         innerBind = BottomSheetBinding.inflate(layoutInflater)
@@ -114,7 +85,7 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
 
         binding.mapView.addView(mapView)
         if (isNetworkAvailable()) { // 현재 단말기의 네트워크 가능여부를 알아내고 시작한다
-            checkLocationCurrentDevice()
+//            checkLocationCurrentDevice()
         } else {
             Log.e(LBS_CHECK_TAG, "네트웍 연결되지 않음!")
             toastMessage("네트웍이 연결되지 않아 종료합니다.")
@@ -182,7 +153,7 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == AppCompatActivity.RESULT_OK && requestCode == LBS_CHECK_CODE) {
-            checkLocationCurrentDevice()
+//            checkLocationCurrentDevice()
         }
     }
 
@@ -210,4 +181,88 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
             }
         }
     }
+
+    private fun storeObserverSetup(storeViewModel: StoreViewModel) {
+        storeViewModel.storeList.observe(viewLifecycleOwner) {
+            with(binding.storeViewPager) {
+                run {
+//                    val storeAdapter = StoreRecyclerAdapter(it, activity as MainActivity)
+                    Log.d("로그", "onViewCreated: ${it.StoreInfo.row}")
+//                    Log.d("로그", "마커: ${bottomList[0].X_CNTS.toDouble()}, ${bottomList[0].Y_DNTS.toDouble()}, ${bottomList[0].UPSO_NM}")
+                    storeList = it.StoreInfo.row
+                    adapter = StoreViewPagerAdapter(it.StoreInfo.row)
+                    orientation = ViewPager2.ORIENTATION_HORIZONTAL
+                    storeAdapter
+
+//                    Log.d("로그", "onViewCreated: ${it.StoreInfo.row}")
+                    storeList.forEachIndexed { index, row ->
+                        mapPOIItem = storeMarker(mapView, storeList[index])
+                        mapView.addPOIItem(mapPOIItem)
+                        mapView.selectPOIItem(mapPOIItem, true)
+                        adapter = StoreViewPagerAdapter(it.StoreInfo.row)
+                        orientation = ViewPager2.ORIENTATION_HORIZONTAL
+                    }
+                    storeAdapter
+                }
+                registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback(){
+                    override fun onPageSelected(position: Int) {
+                        super.onPageSelected(position)
+                        mapPosition = position
+                        if(storeList.size > 0){
+
+                        }
+//                        val selectedStoreModel = store.currentList[position]
+//                        mapView.scrollTo(selectedStoreModel[position].Y_DNTS.toDouble(), selectedStoreModel[position].X_CNTS.toDouble())
+                    }
+                })
+            }
+            with(innerBind.recyclerView) {
+                run {
+                    Log.d("로그", "onViewCreated: $storeList")
+                    val storeAdapter = StoreRecyclerAdapter(storeList)
+                    adapter = storeAdapter
+                    storeAdapter
+                }.refreshRecipeItems()
+            }
+//            displayPOI(it.StoreInfo.row[0])
+        }
+        binding.progressBar.visibility = View.GONE // 로딩
+
+        storeViewModel.errorMessage.observe(viewLifecycleOwner) {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+            Log.e("로그", it)
+        }
+        storeViewModel.isLoading.observe(requireActivity(), Observer {
+            if (it) {
+                binding.progressBar.visibility = View.VISIBLE
+            } else {
+                binding.progressBar.visibility = View.GONE
+            }
+        })
+        storeViewModel.getStoreViewModel()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun storeMarker(mapView: MapView, storeInfo: Row) : MapPOIItem{
+        var mDefaultMarker = MapPOIItem()
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location ->
+            Log.d("로그", "GPS Location Latitude: $latitude" + ", Longitude: $longitude")
+            with(mDefaultMarker) {
+                itemName = storeInfo.UPSO_NM
+                tag = 1
+                mapPoint = MapPoint.mapPointWithGeoCoord(storeInfo.Y_DNTS.toDouble(), storeInfo.X_CNTS.toDouble())
+                markerType = MapPOIItem.MarkerType.BluePin
+                selectedMarkerType = MapPOIItem.MarkerType.RedPin
+                with(mapView) {
+                    addPOIItem(mDefaultMarker)
+                    selectPOIItem(mDefaultMarker, true)
+                    setMapCenterPoint(mapPoint, true)
+                    setZoomLevel(3,true)
+                }
+            }
+        }
+        return mDefaultMarker
+    }
+
 }
