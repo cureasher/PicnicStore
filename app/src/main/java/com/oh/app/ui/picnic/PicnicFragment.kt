@@ -26,6 +26,7 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
 import com.oh.app.common.toastMessage
+import com.oh.app.data.store.CrtfcUpsoInfo
 import com.oh.app.data.store.Row
 import com.oh.app.databinding.BottomSheetBinding
 import com.oh.app.databinding.PicnicFragmentBinding
@@ -34,20 +35,16 @@ import com.oh.app.ui.picnic.adapter.StoreListAdapter
 import com.oh.app.ui.picnic.adapter.StoreViewPagerAdapter
 import com.oh.app.ui.picnic.repository.StoreRepository
 import com.oh.app.ui.picnic.repository.StoreRetrofitService
-import net.daum.mf.map.api.MapPOIItem
-import net.daum.mf.map.api.MapPoint
-import net.daum.mf.map.api.MapView
+import net.daum.mf.map.api.*
 
 const val LBS_CHECK_TAG = "LBS_CHECK_TAG"
 const val LBS_CHECK_CODE = 100
 
 class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     private lateinit var mapView: MapView
-    var longitude = 0.0
-    var latitude = 0.0
     private lateinit var mapPOIItem: MapPOIItem
-    private var storeList: List<Row> = emptyList()
     private lateinit var innerBind: BottomSheetBinding
+    private var storeList: List<Row> = emptyList()
     private val storeAdapter = StoreListAdapter()
     private var mapPosition = 0
     override fun getFragmentBinding(
@@ -75,13 +72,12 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
                 StoreRepository(StoreRetrofitService.getInstance())
             )
         ).get(StoreViewModel::class.java)
-
         storeObserverSetup(storeViewModel)
         storeViewModel.getStoreViewModel()
 
         innerBind = BottomSheetBinding.inflate(layoutInflater)
         mapView = MapView(context)
-        createDefaultMarker(mapView)
+//        createDefaultMarker(mapView)
 
         binding.mapView.addView(mapView)
         if (isNetworkAvailable()) { // 현재 단말기의 네트워크 가능여부를 알아내고 시작한다
@@ -157,31 +153,6 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private fun createDefaultMarker(mapView: MapView) {
-        var mDefaultMarker = MapPOIItem()
-        val name = "현위치"
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location ->
-            val latitude = location.latitude
-            val longitude = location.longitude
-            Log.d("로그", "GPS Location Latitude: $latitude" + ", Longitude: $longitude")
-            with(mDefaultMarker) {
-                itemName = name
-                tag = 0
-//            mapPoint = MapPoint.mapPointWithGeoCoord(37.470123, 126.8958453)
-                mapPoint = MapPoint.mapPointWithGeoCoord(latitude, longitude)
-                markerType = MapPOIItem.MarkerType.BluePin
-                selectedMarkerType = MapPOIItem.MarkerType.RedPin
-                with(mapView) {
-                    addPOIItem(mDefaultMarker)
-                    selectPOIItem(mDefaultMarker, true)
-                    setMapCenterPoint(mapPoint, false)
-                }
-            }
-        }
-    }
-
     private fun storeObserverSetup(storeViewModel: StoreViewModel) {
         storeViewModel.storeList.observe(viewLifecycleOwner) {
             with(binding.storeViewPager) {
@@ -189,6 +160,8 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
 //                    val storeAdapter = StoreRecyclerAdapter(it, activity as MainActivity)
                     Log.d("로그", "onViewCreated: ${it.StoreInfo.row}")
 //                    Log.d("로그", "마커: ${bottomList[0].X_CNTS.toDouble()}, ${bottomList[0].Y_DNTS.toDouble()}, ${bottomList[0].UPSO_NM}")
+                    mapSetting(it.StoreInfo.row[0])
+                    Log.d("로그", "storeObserverSetup: ${it.StoreInfo.row[0]}")
                     storeList = it.StoreInfo.row
                     adapter = StoreViewPagerAdapter(it.StoreInfo.row)
                     orientation = ViewPager2.ORIENTATION_HORIZONTAL
@@ -196,7 +169,7 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
 
 //                    Log.d("로그", "onViewCreated: ${it.StoreInfo.row}")
                     storeList.forEachIndexed { index, row ->
-                        mapPOIItem = storeMarker(mapView, storeList[index])
+                        mapPOIItem = storeMarker(storeList[index])
                         mapView.addPOIItem(mapPOIItem)
                         mapView.selectPOIItem(mapPOIItem, true)
                         adapter = StoreViewPagerAdapter(it.StoreInfo.row)
@@ -204,15 +177,29 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
                     }
                     storeAdapter
                 }
-                registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback(){
+                registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
                         super.onPageSelected(position)
                         mapPosition = position
-                        if(storeList.size > 0){
+                        if (storeList.isNotEmpty()) {
+                            val marker = markerResolver[storeList[position]]
+                            // 해당 위치로 지도 중심점 이동, 지도 확대
+                            if (marker != null) {
+                                val update = CameraUpdateFactory.newMapPoint(marker?.mapPoint, 3F)
+                                with(mapView) {
+                                    animateCamera(
+                                        update,
+                                        object : net.daum.mf.map.api.CancelableCallback {
+                                            override fun onFinish() {
+                                                selectPOIItem(marker, true) // 선택한 상점 마커 선택
+                                            }
 
+                                            override fun onCancel() {
+                                            }
+                                        })
+                                }
+                            }
                         }
-//                        val selectedStoreModel = store.currentList[position]
-//                        mapView.scrollTo(selectedStoreModel[position].Y_DNTS.toDouble(), selectedStoreModel[position].X_CNTS.toDouble())
                     }
                 })
             }
@@ -224,7 +211,7 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
                     storeAdapter
                 }.refreshRecipeItems()
             }
-//            displayPOI(it.StoreInfo.row[0])
+            displayPOI(it.StoreInfo)
         }
         binding.progressBar.visibility = View.GONE // 로딩
 
@@ -243,26 +230,79 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun storeMarker(mapView: MapView, storeInfo: Row) : MapPOIItem{
+    private fun storeMarker(storeInfo: Row): MapPOIItem {
         var mDefaultMarker = MapPOIItem()
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location ->
-            Log.d("로그", "GPS Location Latitude: $latitude" + ", Longitude: $longitude")
             with(mDefaultMarker) {
                 itemName = storeInfo.UPSO_NM
-                tag = 1
-                mapPoint = MapPoint.mapPointWithGeoCoord(storeInfo.Y_DNTS.toDouble(), storeInfo.X_CNTS.toDouble())
+                tag = 0
+                mapPoint = MapPoint.mapPointWithGeoCoord(
+                    storeInfo.Y_DNTS.toDouble(),
+                    storeInfo.X_CNTS.toDouble()
+                )
                 markerType = MapPOIItem.MarkerType.BluePin
                 selectedMarkerType = MapPOIItem.MarkerType.RedPin
                 with(mapView) {
                     addPOIItem(mDefaultMarker)
                     selectPOIItem(mDefaultMarker, true)
-                    setMapCenterPoint(mapPoint, true)
-                    setZoomLevel(3,true)
+                    setMapCenterPoint(mapPoint, false)
+                    setZoomLevel(3, true)
                 }
+                val bounds = MapPointBounds(mapPoint, mapPoint)
+                mapView.moveCamera(CameraUpdateFactory.newMapPointBounds(bounds))
             }
         }
         return mDefaultMarker
     }
 
+    // 맵 초기 세팅
+    private fun mapSetting(data: Row) {
+        with(mapView) {
+            mapType = MapView.MapType.Standard
+            setZoomLevel(3, true)
+            zoomIn(true)
+            zoomOut(true)
+            addPOIItem(storeMarker(data)) // 행사위치 핑
+            setMapCenterPoint(
+                MapPoint.mapPointWithGeoCoord(
+                    data.Y_DNTS.toDouble(),
+                    data.X_CNTS.toDouble()
+                ), true
+            ) // map 중심점
+            Log.d(
+                "로그",
+                "GPS mapSetting : ${data.Y_DNTS.toDouble()}" + ", Longitude: ${data.X_CNTS.toDouble()}"
+            )
+        }
+    }
+
+    var markerResolver: MutableMap<Row, MapPOIItem> = HashMap()
+
+    // 뷰페이저 클릭시 마커되는 부분
+    private fun addMapPoiMarker(data: Row): MapPOIItem {
+        val marker = MapPOIItem()
+        with(marker) {
+            tag = 0
+            markerType = MapPOIItem.MarkerType.RedPin // 마커 색
+            mapPoint = MapPoint.mapPointWithGeoCoord(
+                data.Y_DNTS.toDouble(),
+                data.X_CNTS.toDouble()
+            ) // poi장소 좌표
+            itemName = data.UPSO_NM // 장소명
+        }
+        markerResolver[data] = marker
+        return marker
+    }
+
+    // 전체 마커 map 표시 함수
+    private fun displayPOI(data: CrtfcUpsoInfo) {
+        with(mapView) {
+//            removeAllPOIItems() // 기존 마커들 제거
+            addPOIItem(storeMarker(data.row[0])) // 행사위치 핑
+            for (i in 0 until data.row.size) {
+                addPOIItem(addMapPoiMarker(data.row[i])) // 현 마커 추가
+            }
+        }
+    }
 }

@@ -9,9 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.oh.app.R
 import com.oh.app.data.store.Row
 
-class StoreViewPagerAdapter(idolList: List<Row>) :
+class StoreViewPagerAdapter(storeList: List<Row>) :
     RecyclerView.Adapter<StoreViewPagerAdapter.PagerViewHolder>() {
-    var item = idolList
+    var item = storeList
 
     override fun getItemCount(): Int = item.size
     override fun onBindViewHolder(holder: PagerViewHolder, position: Int) {

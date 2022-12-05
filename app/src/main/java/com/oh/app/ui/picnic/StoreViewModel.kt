@@ -21,7 +21,7 @@ class StoreViewModel(private var repository: StoreRepository) : ViewModel() {
     fun getStoreViewModel() {
         job = CoroutineScope(Dispatchers.IO).launch(exceptionHandler) {
             isLoading.postValue(true)
-            val infoResponse = repository.getStoreInfo("용산구") // 레시피 정보
+            val infoResponse = repository.getStoreInfo("금천구") // 식당 정보
 
             withContext(Dispatchers.Main) {
                 if (infoResponse.isSuccessful) {
