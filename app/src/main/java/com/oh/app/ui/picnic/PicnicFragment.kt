@@ -31,7 +31,6 @@ import com.oh.app.data.store.Row
 import com.oh.app.databinding.BottomSheetBinding
 import com.oh.app.databinding.PicnicFragmentBinding
 import com.oh.app.ui.base.BaseFragment
-import com.oh.app.ui.picnic.adapter.StoreListAdapter
 import com.oh.app.ui.picnic.adapter.StoreViewPagerAdapter
 import com.oh.app.ui.picnic.repository.StoreRepository
 import com.oh.app.ui.picnic.repository.StoreRetrofitService
@@ -39,13 +38,15 @@ import net.daum.mf.map.api.*
 
 const val LBS_CHECK_TAG = "LBS_CHECK_TAG"
 const val LBS_CHECK_CODE = 100
+var storeList: List<Row> = emptyList()
+var markerResolver: MutableMap<Row, MapPOIItem> = HashMap()
 
 class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     private lateinit var mapView: MapView
     private lateinit var mapPOIItem: MapPOIItem
     private lateinit var innerBind: BottomSheetBinding
-    private var storeList: List<Row> = emptyList()
-    private val storeAdapter = StoreListAdapter()
+    private lateinit var eventListener: MarkerEventListener
+    private lateinit var storeAdapter : StoreViewPagerAdapter
     private var mapPosition = 0
     override fun getFragmentBinding(
         inflater: LayoutInflater,
@@ -74,9 +75,11 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
         ).get(StoreViewModel::class.java)
         storeObserverSetup(storeViewModel)
         storeViewModel.getStoreViewModel()
+        eventListener = MarkerEventListener(requireContext())
 
         innerBind = BottomSheetBinding.inflate(layoutInflater)
         mapView = MapView(context)
+        mapView.setPOIItemEventListener(eventListener)
 //        createDefaultMarker(mapView)
 
         binding.mapView.addView(mapView)
@@ -163,9 +166,9 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
                     mapSetting(it.StoreInfo.row[0])
                     Log.d("로그", "storeObserverSetup: ${it.StoreInfo.row[0]}")
                     storeList = it.StoreInfo.row
-                    adapter = StoreViewPagerAdapter(it.StoreInfo.row)
+                    storeAdapter = StoreViewPagerAdapter(it.StoreInfo.row)
                     orientation = ViewPager2.ORIENTATION_HORIZONTAL
-                    storeAdapter
+//                    storeAdapter
 
 //                    Log.d("로그", "onViewCreated: ${it.StoreInfo.row}")
                     storeList.forEachIndexed { index, row ->
@@ -175,12 +178,11 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
                         adapter = StoreViewPagerAdapter(it.StoreInfo.row)
                         orientation = ViewPager2.ORIENTATION_HORIZONTAL
                     }
-                    storeAdapter
+//                    storeAdapter
                 }
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
                         super.onPageSelected(position)
-                        mapPosition = position
                         if (storeList.isNotEmpty()) {
                             val marker = markerResolver[storeList[position]]
                             // 해당 위치로 지도 중심점 이동, 지도 확대
@@ -277,7 +279,6 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
         }
     }
 
-    var markerResolver: MutableMap<Row, MapPOIItem> = HashMap()
 
     // 뷰페이저 클릭시 마커되는 부분
     private fun addMapPoiMarker(data: Row): MapPOIItem {
@@ -305,4 +306,34 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
             }
         }
     }
+
+    // 마커 클릭 이벤트
+    class MarkerEventListener(val context: Context) : MapView.POIItemEventListener {
+        override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
+            Log.d("로그", "onPOIItemSelected: ${poiItem?.itemName} ")
+            mapView?.setMapCenterPoint(poiItem?.mapPoint, true)
+
+        }
+
+        override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
+            // 말풍선 클릭시
+        }
+
+        override fun onCalloutBalloonOfPOIItemTouched(
+            mapView: MapView?,
+            poiItem: MapPOIItem?,
+            mapPoIItem: MapPOIItem.CalloutBalloonButtonType?
+        ) {
+
+        }
+
+        override fun onDraggablePOIItemMoved(
+            mapView: MapView?,
+            poiItem: MapPOIItem?,
+            mapPoint: MapPoint?
+        ) {
+            // 마커의 속성 중 isDraggable = true 일 때 마커를 이동시켰을 경우
+        }
+    }
 }
+
