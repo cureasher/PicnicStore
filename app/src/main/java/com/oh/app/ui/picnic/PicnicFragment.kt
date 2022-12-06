@@ -46,8 +46,9 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     private lateinit var mapPOIItem: MapPOIItem
     private lateinit var innerBind: BottomSheetBinding
     private lateinit var eventListener: MarkerEventListener
-    private lateinit var storeAdapter : StoreViewPagerAdapter
-    private var mapPosition = 0
+    private lateinit var storeAdapter: StoreViewPagerAdapter
+    private lateinit var storeViewPager: ViewPager2
+    private lateinit var data: Row
     override fun getFragmentBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
@@ -68,6 +69,7 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        storeViewPager = binding.storeViewPager
         val storeViewModel: StoreViewModel = ViewModelProvider(
             this, StoreViewModelFactory(
                 StoreRepository(StoreRetrofitService.getInstance())
@@ -158,31 +160,28 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
 
     private fun storeObserverSetup(storeViewModel: StoreViewModel) {
         storeViewModel.storeList.observe(viewLifecycleOwner) {
-            with(binding.storeViewPager) {
+            with(storeViewPager) {
                 run {
-//                    val storeAdapter = StoreRecyclerAdapter(it, activity as MainActivity)
-                    Log.d("로그", "onViewCreated: ${it.StoreInfo.row}")
-//                    Log.d("로그", "마커: ${bottomList[0].X_CNTS.toDouble()}, ${bottomList[0].Y_DNTS.toDouble()}, ${bottomList[0].UPSO_NM}")
                     mapSetting(it.StoreInfo.row[0])
-                    Log.d("로그", "storeObserverSetup: ${it.StoreInfo.row[0]}")
                     storeList = it.StoreInfo.row
                     storeAdapter = StoreViewPagerAdapter(it.StoreInfo.row)
                     orientation = ViewPager2.ORIENTATION_HORIZONTAL
-//                    storeAdapter
 
-//                    Log.d("로그", "onViewCreated: ${it.StoreInfo.row}")
-                    storeList.forEachIndexed { index, row ->
+                    storeList.forEachIndexed { index, _ ->
                         mapPOIItem = storeMarker(storeList[index])
                         mapView.addPOIItem(mapPOIItem)
                         mapView.selectPOIItem(mapPOIItem, true)
                         adapter = StoreViewPagerAdapter(it.StoreInfo.row)
                         orientation = ViewPager2.ORIENTATION_HORIZONTAL
+                        data = it.StoreInfo.row[index]
                     }
 //                    storeAdapter
                 }
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
                         super.onPageSelected(position)
+
+//                        val selectedStoreModel= storeAdapter.currentList[position]
                         if (storeList.isNotEmpty()) {
                             val marker = markerResolver[storeList[position]]
                             // 해당 위치로 지도 중심점 이동, 지도 확대
@@ -235,7 +234,7 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     private fun storeMarker(storeInfo: Row): MapPOIItem {
         var mDefaultMarker = MapPOIItem()
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location ->
+        fusedLocationClient.lastLocation.addOnSuccessListener { _: Location ->
             with(mDefaultMarker) {
                 itemName = storeInfo.UPSO_NM
                 tag = 0
@@ -308,11 +307,29 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     }
 
     // 마커 클릭 이벤트
-    class MarkerEventListener(val context: Context) : MapView.POIItemEventListener {
+    inner class MarkerEventListener(val context: Context) : MapView.POIItemEventListener {
         override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
             Log.d("로그", "onPOIItemSelected: ${poiItem?.itemName} ")
             mapView?.setMapCenterPoint(poiItem?.mapPoint, true)
 
+            // 마커 인덱스 값 확인
+            Log.d(
+                "로그",
+                "마커의 인덱스 값: ${storeList.map { row -> row.UPSO_NM }.indexOf(poiItem?.itemName)}"
+            )
+            val markerIndex = storeList.map { row -> row.UPSO_NM }.indexOf(poiItem?.itemName)
+            with(binding.storeViewPager) {
+                if (markerIndex == -1) {
+                    storeViewPager.setCurrentItem(storeList.size, false)
+                } else {
+                    storeViewPager.setCurrentItem(markerIndex, false)
+                }
+            }
+        }
+
+        fun findIndex(arr: List<Row>, item: Row): Int {
+            item.UPSO_NM
+            return arr.indexOf(item)
         }
 
         override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
@@ -324,7 +341,6 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
             poiItem: MapPOIItem?,
             mapPoIItem: MapPOIItem.CalloutBalloonButtonType?
         ) {
-
         }
 
         override fun onDraggablePOIItemMoved(
