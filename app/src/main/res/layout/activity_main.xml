@@ -17,13 +17,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:icon="@drawable/shopping_basket"
-            android:textAlignment="textStart" />
+            android:text="@string/picnic" />
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:icon="@drawable/restaurant_menu"
-            android:textAlignment="textEnd" />
+            android:text="@string/recipe" />
     </com.google.android.material.tabs.TabLayout>
 
     <FrameLayout
@@ -32,4 +32,25 @@
         android:layout_height="match_parent"
         android:layout_above="@id/tabLayout"
         android:layout_alignParentTop="true" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/moreFabButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/tabLayout"
+        android:layout_alignEnd="@id/tabLayout"
+        android:layout_centerInParent="true"
+        android:layout_margin="10dp"
+        android:backgroundTint="@color/light_green"
+        android:src="@drawable/more_icon" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/myLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/tabLayout"
+        android:layout_alignStart="@id/tabLayout"
+        android:layout_margin="10dp"
+        android:backgroundTint="@color/light_green"
+        android:src="@drawable/my_location_icon" />
 </RelativeLayout>
