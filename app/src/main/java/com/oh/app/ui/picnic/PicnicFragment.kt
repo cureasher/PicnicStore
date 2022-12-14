@@ -7,7 +7,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
-import android.location.Location
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -17,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -25,30 +25,34 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
+import com.oh.app.R
+import com.oh.app.common.MartInit
+import com.oh.app.common.PicnicStoreApplication
 import com.oh.app.common.toastMessage
 import com.oh.app.data.store.CrtfcUpsoInfo
 import com.oh.app.data.store.Row
-import com.oh.app.databinding.BottomSheetBinding
 import com.oh.app.databinding.PicnicFragmentBinding
 import com.oh.app.ui.base.BaseFragment
 import com.oh.app.ui.picnic.adapter.StoreViewPagerAdapter
 import com.oh.app.ui.picnic.repository.StoreRepository
 import com.oh.app.ui.picnic.repository.StoreRetrofitService
 import net.daum.mf.map.api.*
+import net.daum.mf.map.api.MapView.CurrentLocationEventListener
 
 const val LBS_CHECK_TAG = "LBS_CHECK_TAG"
 const val LBS_CHECK_CODE = 100
 var storeList: List<Row> = emptyList()
 var markerResolver: MutableMap<Row, MapPOIItem> = HashMap()
 
-class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
+class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEventListener,
+    StoreViewPagerAdapter.OnStoreInterface {
     private lateinit var mapView: MapView
     private lateinit var mapPOIItem: MapPOIItem
-    private lateinit var innerBind: BottomSheetBinding
     private lateinit var eventListener: MarkerEventListener
     private lateinit var storeAdapter: StoreViewPagerAdapter
     private lateinit var storeViewPager: ViewPager2
     private lateinit var data: Row
+
     override fun getFragmentBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
@@ -66,6 +70,7 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -79,14 +84,14 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
         storeViewModel.getStoreViewModel()
         eventListener = MarkerEventListener(requireContext())
 
-        innerBind = BottomSheetBinding.inflate(layoutInflater)
         mapView = MapView(context)
         mapView.setPOIItemEventListener(eventListener)
-//        createDefaultMarker(mapView)
+        mapView.setMapViewEventListener(this)
+        createDefaultMarker(mapView)
 
         binding.mapView.addView(mapView)
         if (isNetworkAvailable()) { // 현재 단말기의 네트워크 가능여부를 알아내고 시작한다
-//            checkLocationCurrentDevice()
+            checkLocationCurrentDevice()
         } else {
             Log.e(LBS_CHECK_TAG, "네트웍 연결되지 않음!")
             toastMessage("네트웍이 연결되지 않아 종료합니다.")
@@ -124,9 +129,9 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
                  * 정확한 위치를 기다림 : true 일시
                  * 지하, 이동중일 경우 늦어질 수 있음
                  */
-                .setWaitForAccurateLocation(true)
-                .setMinUpdateIntervalMillis(locationIntervalTime) // 위치 획득 후 update 되는 최소 주기
-                .setMaxUpdateDelayMillis(locationIntervalTime).build() // 위치 획득 후 update delay 최대
+                .setWaitForAccurateLocation(true).build()
+//                .setMinUpdateIntervalMillis(locationIntervalTime) // 위치 획득 후 update 되는 최소 주기
+//                .setMaxUpdateDelayMillis(locationIntervalTime).build() // 위치 획득 후 update delay 최대
         val lbsSettingsRequest: LocationSettingsRequest =
             LocationSettingsRequest.Builder().addLocationRequest(locationRequest).build()
         val settingClient: SettingsClient = LocationServices.getSettingsClient(requireActivity())
@@ -154,28 +159,48 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == AppCompatActivity.RESULT_OK && requestCode == LBS_CHECK_CODE) {
-//            checkLocationCurrentDevice()
+            checkLocationCurrentDevice()
         }
     }
 
+    @SuppressLint("SuspiciousIndentation", "MissingPermission")
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun storeObserverSetup(storeViewModel: StoreViewModel) {
         storeViewModel.storeList.observe(viewLifecycleOwner) {
             with(storeViewPager) {
                 run {
                     mapSetting(it.StoreInfo.row[0])
+                    val martPoiInfo = MartInit.setMartPoiList()
+                    val guInfo = PicnicStoreApplication.pref.getString("guInfo", "noguInfo")
+                    Log.d("로그", "마트이름: ${MartInit.getMart(guInfo)} ")
+                    val martNameList = MartInit.getMart(guInfo)
+
+                    martPoiInfo.forEach { s, mapPoint ->
+                        martNameList?.forEach {
+                            if (s == it) {
+                                Log.d("로그", "storeObserverSetup: $s, ${mapPoint}")
+                                martMapSetting(s, MartInit.setMartPoiList())
+                            }
+                        }
+                    }
                     storeList = it.StoreInfo.row
-                    storeAdapter = StoreViewPagerAdapter(it.StoreInfo.row)
+                    storeAdapter = StoreViewPagerAdapter(it.StoreInfo.row,this@PicnicFragment)
+//                    storeAdapter.setItemClickListener(object :
+//                        StoreViewPagerAdapter.OnItemClickListener {
+//                        override fun onItemClick(pos: Int) {
+//                            Log.d("로그", "onItemClick: $pos")
+//                            toastMessage(pos.toString())
+//                        }
+//                    })
                     orientation = ViewPager2.ORIENTATION_HORIZONTAL
 
                     storeList.forEachIndexed { index, _ ->
                         mapPOIItem = storeMarker(storeList[index])
                         mapView.addPOIItem(mapPOIItem)
-                        mapView.selectPOIItem(mapPOIItem, true)
-                        adapter = StoreViewPagerAdapter(it.StoreInfo.row)
-                        orientation = ViewPager2.ORIENTATION_HORIZONTAL
+                        mapView.selectPOIItem(mapPOIItem, false)
+                        adapter = storeAdapter
                         data = it.StoreInfo.row[index]
                     }
-//                    storeAdapter
                 }
                 registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
@@ -184,33 +209,30 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
 //                        val selectedStoreModel= storeAdapter.currentList[position]
                         if (storeList.isNotEmpty()) {
                             val marker = markerResolver[storeList[position]]
-                            // 해당 위치로 지도 중심점 이동, 지도 확대
-                            if (marker != null) {
-                                val update = CameraUpdateFactory.newMapPoint(marker?.mapPoint, 3F)
-                                with(mapView) {
-                                    animateCamera(
-                                        update,
-                                        object : net.daum.mf.map.api.CancelableCallback {
-                                            override fun onFinish() {
-                                                selectPOIItem(marker, true) // 선택한 상점 마커 선택
-                                            }
+                            if (binding.storeViewPager.visibility == View.VISIBLE) {
+                                // 해당 위치로 지도 중심점 이동, 지도 확대
+                                if (marker != null) {
+                                    val update =
+                                        CameraUpdateFactory.newMapPoint(marker.mapPoint, 3F)
+                                    with(mapView) {
+                                        animateCamera(
+                                            update,
+                                            object : net.daum.mf.map.api.CancelableCallback {
+                                                override fun onFinish() {
+                                                    selectPOIItem(marker, true) // 선택한 상점 마커 선택
+                                                }
 
-                                            override fun onCancel() {
-                                            }
-                                        })
+                                                override fun onCancel() {
+
+                                                }
+                                            })
+                                    }
                                 }
                             }
+
                         }
                     }
                 })
-            }
-            with(innerBind.recyclerView) {
-                run {
-                    Log.d("로그", "onViewCreated: $storeList")
-                    val storeAdapter = StoreRecyclerAdapter(storeList)
-                    adapter = storeAdapter
-                    storeAdapter
-                }.refreshRecipeItems()
             }
             displayPOI(it.StoreInfo)
         }
@@ -231,30 +253,74 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun storeMarker(storeInfo: Row): MapPOIItem {
+    private fun createDefaultMarker(mapView: MapView) {
         var mDefaultMarker = MapPOIItem()
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-        fusedLocationClient.lastLocation.addOnSuccessListener { _: Location ->
-            with(mDefaultMarker) {
-                itemName = storeInfo.UPSO_NM
-                tag = 0
-                mapPoint = MapPoint.mapPointWithGeoCoord(
-                    storeInfo.Y_DNTS.toDouble(),
-                    storeInfo.X_CNTS.toDouble()
-                )
-                markerType = MapPOIItem.MarkerType.BluePin
-                selectedMarkerType = MapPOIItem.MarkerType.RedPin
-                with(mapView) {
-                    addPOIItem(mDefaultMarker)
-                    selectPOIItem(mDefaultMarker, true)
-                    setMapCenterPoint(mapPoint, false)
-                    setZoomLevel(3, true)
-                }
-                val bounds = MapPointBounds(mapPoint, mapPoint)
-                mapView.moveCamera(CameraUpdateFactory.newMapPointBounds(bounds))
+        val name = "현재 위치"
+        var latitude = PicnicStoreApplication.pref.getString("latitude", "nolatitude")
+        var longitude = PicnicStoreApplication.pref.getString("longitude", "nolongitude")
+
+        Log.d("로그", "구정보 위치 확인: ${latitude}, ${longitude}")
+        with(mDefaultMarker) {
+            itemName = name
+            tag = 0
+            mapPoint = MapPoint.mapPointWithGeoCoord(latitude.toDouble(), longitude.toDouble())
+            markerType = MapPOIItem.MarkerType.BluePin
+            selectedMarkerType = MapPOIItem.MarkerType.RedPin
+            with(mapView) {
+                addPOIItem(mDefaultMarker)
+                selectPOIItem(mDefaultMarker, false)
+                setMapCenterPointAndZoomLevel(mapPoint, 3, false)
             }
         }
-        return mDefaultMarker
+    }
+
+    @SuppressLint("MissingPermission", "SuspiciousIndentation")
+    private fun storeMarker(storeInfo: Row): MapPOIItem {
+        var mStoreMarker = MapPOIItem()
+        with(mStoreMarker) {
+            itemName = storeInfo.UPSO_NM
+            tag = 2
+            mapPoint = MapPoint.mapPointWithGeoCoord(
+                storeInfo.Y_DNTS.toDouble(),
+                storeInfo.X_CNTS.toDouble()
+            )
+            markerType = MapPOIItem.MarkerType.CustomImage
+            selectedMarkerType = MapPOIItem.MarkerType.CustomImage
+            customImageResourceId = R.drawable.rice_mart_icon
+            customSelectedImageResourceId = R.drawable.rice_mart_select
+            with(mapView) {
+                addPOIItem(mStoreMarker)
+                selectPOIItem(mStoreMarker, true)
+                setZoomLevel(3, true)
+            }
+            val bounds = MapPointBounds(mapPoint, mapPoint)
+            mapView.moveCamera(CameraUpdateFactory.newMapPointBounds(bounds))
+        }
+        return mStoreMarker
+    }
+
+    private fun martMapSetting(storeName: String, data: HashMap<String, MapPoint>) {
+        val guInfo = PicnicStoreApplication.pref.getString("guInfo", "noguInfo")
+
+        Log.d("로그", "martMapSetting: ${MartInit.getMart(guInfo)} ")
+
+        with(mapView) {
+            mapType = MapView.MapType.Standard
+            setZoomLevel(3, true)
+            zoomIn(true)
+            zoomOut(true)
+            val marker = MapPOIItem()
+            with(marker) {
+                itemName = storeName
+                tag = 2
+                mapPoint = data[storeName]
+                markerType = MapPOIItem.MarkerType.CustomImage
+                selectedMarkerType = MapPOIItem.MarkerType.CustomImage
+                customImageResourceId = R.drawable.fruit_shop_icon
+                customSelectedImageResourceId = R.drawable.fruit_shop_select
+                mapView.addPOIItem(marker)
+            }
+        }
     }
 
     // 맵 초기 세팅
@@ -265,12 +331,6 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
             zoomIn(true)
             zoomOut(true)
             addPOIItem(storeMarker(data)) // 행사위치 핑
-            setMapCenterPoint(
-                MapPoint.mapPointWithGeoCoord(
-                    data.Y_DNTS.toDouble(),
-                    data.X_CNTS.toDouble()
-                ), true
-            ) // map 중심점
             Log.d(
                 "로그",
                 "GPS mapSetting : ${data.Y_DNTS.toDouble()}" + ", Longitude: ${data.X_CNTS.toDouble()}"
@@ -278,13 +338,15 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
         }
     }
 
-
     // 뷰페이저 클릭시 마커되는 부분
     private fun addMapPoiMarker(data: Row): MapPOIItem {
         val marker = MapPOIItem()
         with(marker) {
-            tag = 0
-            markerType = MapPOIItem.MarkerType.RedPin // 마커 색
+            tag = 2
+            markerType = MapPOIItem.MarkerType.CustomImage // 마커 색
+            selectedMarkerType = MapPOIItem.MarkerType.CustomImage
+            customImageResourceId = R.drawable.rice_mart_icon
+            customSelectedImageResourceId = R.drawable.rice_mart_select
             mapPoint = MapPoint.mapPointWithGeoCoord(
                 data.Y_DNTS.toDouble(),
                 data.X_CNTS.toDouble()
@@ -299,9 +361,10 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     private fun displayPOI(data: CrtfcUpsoInfo) {
         with(mapView) {
 //            removeAllPOIItems() // 기존 마커들 제거
-            addPOIItem(storeMarker(data.row[0])) // 행사위치 핑
+
             for (i in 0 until data.row.size) {
                 addPOIItem(addMapPoiMarker(data.row[i])) // 현 마커 추가
+                addPOIItem(storeMarker(data.row[i])) // 행사위치 핑
             }
         }
     }
@@ -310,7 +373,9 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
     inner class MarkerEventListener(val context: Context) : MapView.POIItemEventListener {
         override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
             Log.d("로그", "onPOIItemSelected: ${poiItem?.itemName} ")
-            mapView?.setMapCenterPoint(poiItem?.mapPoint, true)
+            mapView?.setMapCenterPoint(poiItem?.mapPoint, false)
+            binding.storeViewPager.visibility = View.VISIBLE
+            binding.mapOverlay.visibility = View.VISIBLE
 
             // 마커 인덱스 값 확인
             Log.d(
@@ -319,22 +384,18 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
             )
             val markerIndex = storeList.map { row -> row.UPSO_NM }.indexOf(poiItem?.itemName)
             with(binding.storeViewPager) {
-                if (markerIndex == -1) {
-                    storeViewPager.setCurrentItem(storeList.size, false)
-                } else {
+                if (markerIndex >= -1) {
                     storeViewPager.setCurrentItem(markerIndex, false)
+                } else {
+                    storeViewPager.setCurrentItem(storeList.size, false)
                 }
             }
-        }
-
-        fun findIndex(arr: List<Row>, item: Row): Int {
-            item.UPSO_NM
-            return arr.indexOf(item)
         }
 
         override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
             // 말풍선 클릭시
         }
+
 
         override fun onCalloutBalloonOfPOIItemTouched(
             mapView: MapView?,
@@ -350,6 +411,60 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>() {
         ) {
             // 마커의 속성 중 isDraggable = true 일 때 마커를 이동시켰을 경우
         }
+    }
+
+    override fun onMapViewInitialized(p0: MapView?) {
+    }
+
+    override fun onMapViewCenterPointMoved(p0: MapView?, p1: MapPoint?) {
+    }
+
+    override fun onMapViewZoomLevelChanged(p0: MapView?, p1: Int) {
+    }
+
+    override fun onMapViewSingleTapped(mapView: MapView?, mapPoint: MapPoint?) {
+        binding.storeViewPager.visibility = View.INVISIBLE
+        binding.mapOverlay.visibility = View.INVISIBLE
+    }
+
+    override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {
+    }
+
+    override fun onMapViewLongPressed(p0: MapView?, p1: MapPoint?) {
+    }
+
+    override fun onMapViewDragStarted(p0: MapView?, p1: MapPoint?) {
+    }
+
+    override fun onMapViewDragEnded(p0: MapView?, p1: MapPoint?) {
+    }
+
+    override fun onMapViewMoveFinished(p0: MapView?, p1: MapPoint?) {
+    }
+
+    override fun onItemClick(pos: Int) {
+
+        Log.d("로그", "onItemClick: 클릭함")
+        val marker = markerResolver[storeList[pos]]
+//        if (binding.storeViewPager.visibility == View.VISIBLE) {
+//            // 해당 위치로 지도 중심점 이동, 지도 확대
+//            if (marker != null) {
+//                val update = CameraUpdateFactory.newMapPoint(marker.mapPoint, 3F)
+//                with(mapView) {
+//                    animateCamera(
+//                        update,
+//                        object : net.daum.mf.map.api.CancelableCallback {
+//                            override fun onFinish() {
+//                                selectPOIItem(marker, true) // 선택한 상점 마커 선택
+//                            }
+//
+//                            override fun onCancel() {
+//
+//                            }
+//                        })
+//                }
+//            }
+//        }
     }
 }
 
