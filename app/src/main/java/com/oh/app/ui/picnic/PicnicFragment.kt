@@ -7,6 +7,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -15,9 +16,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -37,7 +42,6 @@ import com.oh.app.ui.picnic.adapter.StoreViewPagerAdapter
 import com.oh.app.ui.picnic.repository.StoreRepository
 import com.oh.app.ui.picnic.repository.StoreRetrofitService
 import net.daum.mf.map.api.*
-import net.daum.mf.map.api.MapView.CurrentLocationEventListener
 
 const val LBS_CHECK_TAG = "LBS_CHECK_TAG"
 const val LBS_CHECK_CODE = 100
@@ -52,6 +56,9 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
     private lateinit var storeAdapter: StoreViewPagerAdapter
     private lateinit var storeViewPager: ViewPager2
     private lateinit var data: Row
+    private lateinit var spinner: Spinner
+    private lateinit var storeViewModel: StoreViewModel
+    private var isCheckd = true
 
     override fun getFragmentBinding(
         inflater: LayoutInflater,
@@ -73,21 +80,18 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         storeViewPager = binding.storeViewPager
-        val storeViewModel: StoreViewModel = ViewModelProvider(
-            this, StoreViewModelFactory(
-                StoreRepository(StoreRetrofitService.getInstance())
-            )
-        ).get(StoreViewModel::class.java)
-        storeObserverSetup(storeViewModel)
-        storeViewModel.getStoreViewModel()
         eventListener = MarkerEventListener(requireContext())
-
         mapView = MapView(context)
         mapView.setPOIItemEventListener(eventListener)
         mapView.setMapViewEventListener(this)
-        createDefaultMarker(mapView)
+
+        // 초기 체크 유무 true
+        with(binding){
+            martChip.isChecked = true
+            restaurantChip.isChecked = true
+        }
+
 
         binding.mapView.addView(mapView)
         if (isNetworkAvailable()) { // 현재 단말기의 네트워크 가능여부를 알아내고 시작한다
@@ -96,6 +100,12 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
             Log.e(LBS_CHECK_TAG, "네트웍 연결되지 않음!")
             toastMessage("네트웍이 연결되지 않아 종료합니다.")
         }
+        spinnerSetting()
+        val guInfo = PicnicStoreApplication.pref.getString("guInfo", "")
+        spinner.setSelection(getIndex(spinner, guInfo))
+
+        chipSetting()
+
     }
 
     private fun isNetworkAvailable(): Boolean {
@@ -129,9 +139,9 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
                  * 정확한 위치를 기다림 : true 일시
                  * 지하, 이동중일 경우 늦어질 수 있음
                  */
-                .setWaitForAccurateLocation(true).build()
-//                .setMinUpdateIntervalMillis(locationIntervalTime) // 위치 획득 후 update 되는 최소 주기
-//                .setMaxUpdateDelayMillis(locationIntervalTime).build() // 위치 획득 후 update delay 최대
+                .setWaitForAccurateLocation(true)
+                .setMinUpdateIntervalMillis(locationIntervalTime) // 위치 획득 후 update 되는 최소 주기
+                .setMaxUpdateDelayMillis(locationIntervalTime).build() // 위치 획득 후 update delay 최대
         val lbsSettingsRequest: LocationSettingsRequest =
             LocationSettingsRequest.Builder().addLocationRequest(locationRequest).build()
         val settingClient: SettingsClient = LocationServices.getSettingsClient(requireActivity())
@@ -139,8 +149,11 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
             settingClient.checkLocationSettings(lbsSettingsRequest)
         // 위치정보 설정이 on일 경우
         taskBSSettingResponse.addOnSuccessListener {
-            mapView.currentLocationTrackingMode =
-                MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
+            with(mapView) {
+                currentLocationTrackingMode =
+                    MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading
+                createDefaultMarker(mapView)
+            }
         }
 
         // 위치 정보 설정이 off일 경우
@@ -165,13 +178,13 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
 
     @SuppressLint("SuspiciousIndentation", "MissingPermission")
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun storeObserverSetup(storeViewModel: StoreViewModel) {
+    private fun storeObserverSetup(storeViewModel: StoreViewModel, guInfo: String) {
         storeViewModel.storeList.observe(viewLifecycleOwner) {
             with(storeViewPager) {
                 run {
                     mapSetting(it.StoreInfo.row[0])
                     val martPoiInfo = MartInit.setMartPoiList()
-                    val guInfo = PicnicStoreApplication.pref.getString("guInfo", "noguInfo")
+                    val guInfo = guInfo
                     Log.d("로그", "마트이름: ${MartInit.getMart(guInfo)} ")
                     val martNameList = MartInit.getMart(guInfo)
 
@@ -184,7 +197,7 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
                         }
                     }
                     storeList = it.StoreInfo.row
-                    storeAdapter = StoreViewPagerAdapter(it.StoreInfo.row,this@PicnicFragment)
+                    storeAdapter = StoreViewPagerAdapter(it.StoreInfo.row, this@PicnicFragment)
 //                    storeAdapter.setItemClickListener(object :
 //                        StoreViewPagerAdapter.OnItemClickListener {
 //                        override fun onItemClick(pos: Int) {
@@ -249,13 +262,23 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
                 binding.progressBar.visibility = View.GONE
             }
         })
+//        storeViewModel.guValue.observe(viewLifecycleOwner) {
+//            Log.d("로그", "뷰모델 확인 guvalue: $it")
+//            binding.locationSpinner.selectedItem.toString()
+//            Log.d("로그", "뷰모델 확인 guvalue: ${binding.locationSpinner.selectedItem.toString()}")
+//        }
         storeViewModel.getStoreViewModel()
+
     }
 
     @SuppressLint("MissingPermission")
     private fun createDefaultMarker(mapView: MapView) {
         var mDefaultMarker = MapPOIItem()
         val name = "현재 위치"
+
+        MartInit.fusedMyLocation()
+
+        // 프리퍼런스에 저장
         var latitude = PicnicStoreApplication.pref.getString("latitude", "nolatitude")
         var longitude = PicnicStoreApplication.pref.getString("longitude", "nolongitude")
 
@@ -264,6 +287,7 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
             itemName = name
             tag = 0
             mapPoint = MapPoint.mapPointWithGeoCoord(latitude.toDouble(), longitude.toDouble())
+
             markerType = MapPOIItem.MarkerType.BluePin
             selectedMarkerType = MapPOIItem.MarkerType.RedPin
             with(mapView) {
@@ -303,7 +327,6 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
         val guInfo = PicnicStoreApplication.pref.getString("guInfo", "noguInfo")
 
         Log.d("로그", "martMapSetting: ${MartInit.getMart(guInfo)} ")
-
         with(mapView) {
             mapType = MapView.MapType.Standard
             setZoomLevel(3, true)
@@ -331,10 +354,6 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
             zoomIn(true)
             zoomOut(true)
             addPOIItem(storeMarker(data)) // 행사위치 핑
-            Log.d(
-                "로그",
-                "GPS mapSetting : ${data.Y_DNTS.toDouble()}" + ", Longitude: ${data.X_CNTS.toDouble()}"
-            )
         }
     }
 
@@ -465,6 +484,85 @@ class PicnicFragment : BaseFragment<PicnicFragmentBinding>(), MapView.MapViewEve
 //                }
 //            }
 //        }
+    }
+
+
+    fun spinnerSetting() {
+        spinner = binding.locationSpinner
+        val locationAdapter = ArrayAdapter.createFromResource(
+            requireContext(),
+            R.array.location_array,
+            R.layout.spinner_item
+        )
+        locationAdapter.setDropDownViewResource(R.layout.spinner_drop_down)
+        with(spinner) {
+            adapter = locationAdapter
+            onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                @RequiresApi(Build.VERSION_CODES.N)
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    pos: Int,
+                    id: Long
+                ) {
+                    storeViewModel = ViewModelProvider(
+                        requireActivity(),
+                        StoreViewModelFactory(StoreRepository(StoreRetrofitService.getInstance()))
+                    ).get(StoreViewModel::class.java)
+                    storeObserverSetup(storeViewModel, parent?.getItemAtPosition(pos).toString())
+                    storeViewModel.getStoreViewModel()
+//                    storeViewModel.guValue.value = parent?.getItemAtPosition(pos).toString()
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    parent?.getItemAtPosition(getIndex(binding.locationSpinner, "금천구"))
+                }
+            }
+        }
+    }
+
+    fun getIndex(spinner: Spinner, item: String): Int {
+        for (i in 0..spinner.count) {
+            if (spinner.getItemAtPosition(i).toString() == item) {
+                Log.d("로그", "getIndex: $i $item")
+                return i
+            }
+        }
+        return 0
+    }
+
+    @SuppressLint("RestrictedApi")
+    fun chipSetting() {
+        with(binding) {
+            if(isCheckd){
+                martChip.setTextColor(Color.WHITE)
+                restaurantChip.setTextColor(Color.WHITE)
+            }
+            martChip.setInternalOnCheckedChangeListener { checkable, isChecked ->
+                if(isChecked){
+                    martChip.chipBackgroundColor =
+                        ContextCompat.getColorStateList(requireContext(), R.color.dark_blue)
+                    martChip.setTextColor(Color.WHITE)
+                } else {
+                    martChip.chipBackgroundColor =
+                        ContextCompat.getColorStateList(requireContext(), R.color.light_blue)
+                    martChip.setTextColor(Color.BLACK)
+                }
+            }
+            restaurantChip.setInternalOnCheckedChangeListener { checkable, isChecked ->
+                if(isChecked){
+                    restaurantChip.chipBackgroundColor =
+                        ContextCompat.getColorStateList(requireContext(), R.color.dark_blue)
+                    restaurantChip.setTextColor(Color.WHITE)
+                } else {
+                    restaurantChip.chipBackgroundColor =
+                        ContextCompat.getColorStateList(requireContext(), R.color.light_blue)
+                    restaurantChip.setTextColor(Color.BLACK)
+                }
+            }
+        }
+
+
     }
 }
 
