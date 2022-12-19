@@ -27,8 +27,9 @@
             android:layout_width="100dp"
             android:layout_height="50dp"
             android:checked="true"
-            android:text="김치"
+            android:text="@string/kimchi"
             android:textAlignment="center"
+            android:textColor="@color/white"
             app:chipBackgroundColor="@drawable/bg_recipe_chip_background"
             app:chipStrokeWidth="1dp" />
 
@@ -38,8 +39,9 @@
             android:layout_width="100dp"
             android:layout_height="50dp"
             android:checkable="true"
-            android:text="닭"
+            android:text="@string/chikin"
             android:textAlignment="center"
+            android:textColor="@color/white"
             app:chipBackgroundColor="@drawable/bg_recipe_chip_background"
             app:chipStrokeWidth="1dp" />
 
@@ -49,8 +51,9 @@
             android:layout_width="100dp"
             android:layout_height="50dp"
             android:checkable="true"
-            android:text="양배추"
+            android:text="@string/cabage"
             android:textAlignment="center"
+            android:textColor="@color/white"
             app:chipBackgroundColor="@drawable/bg_recipe_chip_background"
             app:chipStrokeWidth="1dp" />
     </com.google.android.material.chip.ChipGroup>
@@ -76,6 +79,113 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/recipeChip"
-        app:spanCount="2" />
+        app:spanCount="2"
+        tools:listitem="@layout/recipe_info_item"
+        tools:visibility="invisible"/>
 
+
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmerLoading"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintVertical_weight="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/recipeChip">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2"
+                android:baselineAligned="false">
+
+                <include
+                    layout="@layout/recipe_info_item"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1" />
+
+                <include
+                    layout="@layout/recipe_info_item"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2"
+                android:baselineAligned="false">
+
+                <include
+                    layout="@layout/recipe_info_item"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1" />
+
+                <include
+                    layout="@layout/recipe_info_item"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2"
+                android:baselineAligned="false">
+
+                <include
+                    layout="@layout/recipe_info_item"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1" />
+
+                <include
+                    layout="@layout/recipe_info_item"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2"
+                android:baselineAligned="false">
+
+                <include
+                    layout="@layout/recipe_info_item"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1" />
+
+                <include
+                    layout="@layout/recipe_info_item"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.facebook.shimmer.ShimmerFrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

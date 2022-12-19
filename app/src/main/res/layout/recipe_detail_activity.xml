@@ -11,11 +11,15 @@
         android:layout_height="match_parent"
         android:background="@color/light_blue">
 
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/recipeMainImage"
-            android:layout_width="match_parent"
+            android:layout_width="300dp"
             android:layout_height="300dp"
-            android:scaleType="fitXY"
+            android:layout_gravity="center"
+            android:background="@android:color/transparent"
+            app:civ_border_overlay="true"
+            app:civ_border_width="5dp"
+            app:civ_border_color="#000000"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -23,13 +27,17 @@
 
         <TextView
             android:id="@+id/recipeMenuName"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
+            android:paddingStart="20dp"
+            android:paddingVertical="20dp"
+            android:textSize="20sp"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:background="@color/dark_blue_FF"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/recipeMainImage"
-            tools:text="두부 유부 초밥" />
+            tools:text="@string/recipe_menu" />
 
         <TextView
             android:id="@+id/cookingMethodText"
@@ -38,7 +46,7 @@
             android:layout_marginStart="10dp"
             app:layout_constraintBottom_toBottomOf="@+id/recipeMenuName"
             app:layout_constraintStart_toEndOf="@+id/recipeMenuName"
-            tools:text="조리방법 :" />
+            tools:text="@string/cooking_method_text" />
 
         <TextView
             android:id="@+id/cookingMethod"
@@ -47,31 +55,50 @@
             android:layout_marginStart="10dp"
             app:layout_constraintBottom_toBottomOf="@+id/cookingMethodText"
             app:layout_constraintStart_toEndOf="@+id/cookingMethodText"
-            tools:text="끓이기" />
+            tools:text="@string/cooking_method" />
 
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/recipeMaterialNameCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:cardCornerRadius="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginHorizontal="10dp"
+            android:backgroundTint="@color/dark_blue_FF"
+            app:layout_constraintTop_toBottomOf="@id/recipeMenuName">
         <TextView
             android:id="@+id/recipeMaterialName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:gravity="center"
             android:layout_marginHorizontal="20dp"
             android:layout_marginTop="20dp"
-            android:textAlignment="viewStart"
+            android:layout_marginBottom="20dp"
             android:textSize="12sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/recipeMenuName"
-            tools:text="재료 닭가슴살(60g), 애호박(30g), 미나리(20g), 청양고추(3g), 두부(60g)\n김치(120g), 참기름(20g), 느타리버섯(10g), 달걀(50g)\n육수 다시마(5g), 무(40g), 대파(5g), 양파(10g), 마른 고추(3g), 멸치(10g)\n마늘(10g), 청주(10g), 물(300g)" />
+            tools:text="@string/recipe_material_name" />
+        </androidx.cardview.widget.CardView>
 
-
-        <TextView
-            android:id="@+id/guideText1"
-            android:layout_width="wrap_content"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/guideText1card"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/recipeMaterialName"
-            tools:text="1. 닭은 포를 떠서 생강즙과 정종을 섞어\n발라 놓는다." />
+            app:cardCornerRadius="20dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintTop_toBottomOf="@id/recipeMaterialNameCard">
+        <TextView
+            android:id="@+id/guideText1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginVertical="10dp"
+            tools:text="@string/guide_text1" />
 
+        </androidx.cardview.widget.CardView>
         <ImageView
             android:id="@+id/guideImage1"
             android:layout_width="0dp"
@@ -80,19 +107,29 @@
             android:minHeight="200dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/guideText1"
+            app:layout_constraintTop_toBottomOf="@id/guideText1card"
             app:layout_constraintWidth_percent="0.7"
             tools:background="@color/light_blue" />
 
-        <TextView
-            android:id="@+id/guideText2"
-            android:layout_width="wrap_content"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/guideText2card"
+            android:layout_width="300dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/guideImage1"
-            tools:text="2. 닭은 포를 떠서 생강즙과 정종을 섞어\n발라 놓는다." />
+            app:cardCornerRadius="20dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintTop_toBottomOf="@id/guideImage1">
+        <TextView
+            android:id="@+id/guideText2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingVertical="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="@string/guide_text2" />
+        </androidx.cardview.widget.CardView>
 
         <ImageView
             android:id="@+id/guideImage2"
@@ -102,20 +139,31 @@
             android:minHeight="200dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/guideText2"
+            app:layout_constraintTop_toBottomOf="@id/guideText2card"
             app:layout_constraintWidth_percent="0.7"
             tools:background="@color/light_blue" />
 
+        <androidx.cardview.widget.CardView
+            android:id="@+id/guideText3card"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:cardCornerRadius="20dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintTop_toBottomOf="@id/guideImage2">
         <TextView
             android:id="@+id/guideText3"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:paddingVertical="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/guideImage2"
-            tools:text="3. 닭은 포를 떠서 생강즙과 정종을 섞어\n발라 놓는다." />
+            tools:text="@string/guide_text3" />
 
+        </androidx.cardview.widget.CardView>
         <ImageView
             android:id="@+id/guideImage3"
             android:layout_width="0dp"
@@ -124,20 +172,31 @@
             android:minHeight="200dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/guideText3"
+            app:layout_constraintTop_toBottomOf="@id/guideText3card"
             app:layout_constraintWidth_percent="0.7"
             tools:background="@color/light_blue" />
 
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/guideText4card"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:cardCornerRadius="20dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintTop_toBottomOf="@id/guideImage3">
         <TextView
             android:id="@+id/guideText4"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:paddingVertical="10dp"
+            android:gravity="center"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/guideImage3"
-            tools:text="4. 닭은 포를 떠서 생강즙과 정종을 섞어\n발라 놓는다." />
-
+            tools:text="@string/guide_text4" />
+        </androidx.cardview.widget.CardView>
 
         <ImageView
             android:id="@+id/guideImage4"
@@ -147,7 +206,7 @@
             android:minHeight="200dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/guideText4"
+            app:layout_constraintTop_toBottomOf="@id/guideText4card"
             app:layout_constraintWidth_percent="0.7"
             tools:background="@color/light_blue" />
 
@@ -156,7 +215,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="태그"
+            tools:text="@string/tag_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/guideImage4" />
@@ -169,6 +228,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tagText"
-            tools:text="닭가슴살" />
+            tools:text="@string/tag_text_value" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

@@ -2,6 +2,47 @@
     <string name="app_name">PicnicStore</string>
     <string name="picnic"><![CDATA[음식점&마트]]></string>
     <string name="recipe">레시피</string>
+    <string name="https_developer_android"><u>https://devloper.android.com/reference/android/support/contratint/packages</u></string>
+    <string name="thema_select">Thema Select</string>
+    <string name="uiDefault">Default</string>
+    <string name="light">Light</string>
+    <string name="restaurant">음식점</string>
+    <string name="mart">마트</string>
+    <string name="oss_notice_picnic_store">OSS Notice | PicnicStore</string>
+    <string name="android_constraint_layout_library">Android Constraint Layout Library</string>
+    <string name="android_jetpack">Android Jetpack</string>
+    <string name="copyright_2017_the_android_open_source">Copyright 2017 The Android Open Source Project</string>
+    <string name="apache_license2">▶︎ Apache License 2.0</string>
+    <string name="android_material_components">Android Material Components</string>
+    <string name="picnic_store">Picnic\nStore</string>
+    <string name="dark">Dark</string>
+    <string name="mart_product_info">마트 상품 정보</string>
+    <string name="no">아니오</string>
+    <string name="yes">예</string>
+    <string name="mart_info">마트정보</string>
+    <string name="move">이동</string>
+    <string name="kimchi">김치</string>
+    <string name="chikin">닭</string>
+    <string name="cabage">양배추</string>
+    <string name="max_price">최대 가격 : 4000원</string>
+    <string name="min_price">최소 가격 : 4000원</string>
+    <string name="max_month">가격이 높은 달 :</string>
+    <string name="min_month">가격이 낮은 달 :</string>
+    <string name="sample_store_text">본죽 비빔밥 한남순천향병원점</string>
+    <string name="sample_menu">한식</string>
+    <string name="sample_address">서울특별시 용산구 대사관로 63</string>
+    <string name="product_name">사과(부사, 300g)</string>
+    <string name="recipe_menu">두부 유부 초밥</string>
+    <string name="cooking_method_text">조리방법 :</string>
+    <string name="cooking_method">끓이기</string>
+    <string name="recipe_material_name">재료 닭가슴살(60g), 애호박(30g), 미나리(20g), 청양고추(3g), 두부(60g)\n김치(120g), 참기름(20g), 느타리버섯(10g), 달걀(50g)\n육수 다시마(5g), 무(40g), 대파(5g), 양파(10g), 마른 고추(3g), 멸치(10g)\n마늘(10g), 청주(10g), 물(300g)</string>
+    <string name="guide_text1">1. 닭은 포를 떠서 생강즙과 정종을 섞어\n발라 놓는다.</string>
+    <string name="guide_text2">2. 닭은 포를 떠서 생강즙과 정종을 섞어\n발라 놓는다.</string>
+    <string name="guide_text3">3. 닭은 포를 떠서 생강즙과 정종을 섞어\n발라 놓는다.</string>
+    <string name="guide_text4">4. 닭은 포를 떠서 생강즙과 정종을 섞어\n발라 놓는다.</string>
+    <string name="tag_text">태그</string>
+    <string name="tag_text_value">닭가슴살</string>
+
     <string-array name="location_array">
         <item>강남구</item>
         <item>강동구</item>
