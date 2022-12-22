@@ -11,12 +11,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.children
-import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.chip.Chip
-import com.oh.app.R
 import com.oh.app.databinding.RecipeFragmentBinding
 import com.oh.app.ui.base.BaseFragment
 import com.oh.app.ui.main.MainActivity
@@ -56,11 +54,10 @@ class RecipeFragment : BaseFragment<RecipeFragmentBinding>() {
         viewModel.getRecipeViewModel(selectChip ?: "김치")
         with(binding) {
             recipeChip.isSingleSelection = true
-
             kimchiChip.setTextColor(Color.BLACK)
             chickenChip.setTextColor(Color.BLACK)
             cabbageChip.setTextColor(Color.BLACK)
-            recipeChip.setOnCheckedChangeListener { group, checkedId ->
+            recipeChip.setOnCheckedStateChangeListener { group, checkedId ->
 
                 selectChip = group.children.toList().filter { (it as Chip).isChecked }
                     .joinToString(", ") { (it as Chip).text }
@@ -68,7 +65,6 @@ class RecipeFragment : BaseFragment<RecipeFragmentBinding>() {
                 viewModel.getRecipeViewModel(selectChip ?: "김치")
             }
         }
-
 
         viewModel.recipeList.observe(viewLifecycleOwner) {
             with(binding.recipeList) {
@@ -79,7 +75,6 @@ class RecipeFragment : BaseFragment<RecipeFragmentBinding>() {
                     recipeAdapter
                 }.refreshRecipeItems()
             }
-            binding.progressBar.visibility = View.GONE // 로딩
         }
 
         viewModel.errorMessage.observe(viewLifecycleOwner) {
@@ -95,6 +90,5 @@ class RecipeFragment : BaseFragment<RecipeFragmentBinding>() {
                 binding.progressBar.visibility = View.GONE
             }
         })
-
     }
 }

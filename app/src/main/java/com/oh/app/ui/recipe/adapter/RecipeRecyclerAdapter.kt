@@ -1,12 +1,11 @@
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.oh.app.MainActivity
 import com.oh.app.data.recipe.RecipeInfoData
 import com.oh.app.databinding.RecipeInfoItemBinding
+import com.oh.app.ui.main.MainActivity
 import com.oh.app.ui.recipe.detail.RecipeDetailActivity
 
 class RecipeRecyclerAdapter(private var recipeList: RecipeInfoData, val owner: MainActivity) :
@@ -19,10 +18,9 @@ class RecipeRecyclerAdapter(private var recipeList: RecipeInfoData, val owner: M
     }
 
     override fun onBindViewHolder(holder: RecipeViewHolder, position: Int) {
-        val recipeItem = list.get(position)
+        val recipeItem = list[position]
 
         with(holder.binding) {
-            Log.d("로그", "onBindViewHolder: $recipeItem")
             recipeName.text = recipeItem.RCP_NM
             Glide.with(this.recipeImage.context).load("""${recipeItem.ATT_FILE_NO_MAIN}""")
                 .into(this.recipeImage)

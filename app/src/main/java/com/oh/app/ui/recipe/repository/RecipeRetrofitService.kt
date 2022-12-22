@@ -9,8 +9,15 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface RecipeRetrofitService {
-    @GET("1/50/RCP_NM={recipeName}")
-    suspend fun getRecipeInfo(@Path("recipeName") recipeName: String): Response<RecipeInfoData>
+    @GET("{startPage}/{endPage}/RCP_NM={recipeName}")
+    suspend fun getRecipeInfo(
+        @Path("startPage")
+        startPage : Int,
+        @Path("endPage")
+        endPage : Int,
+        @Path("recipeName")
+        recipeName: String
+    ): Response<RecipeInfoData>
 
     companion object {
         var retrofitService: RecipeRetrofitService? = null
