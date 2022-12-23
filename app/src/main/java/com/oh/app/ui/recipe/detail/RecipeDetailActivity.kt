@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION", "InternalInsetResource", "DiscouragedApi")
+
 package com.oh.app.ui.recipe.detail
 
 import android.content.Context
@@ -10,21 +12,22 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
+import com.oh.app.common.TAG
 import com.oh.app.data.recipe.RecipeInfoData
 import com.oh.app.databinding.RecipeDetailActivityBinding
 
 class RecipeDetailActivity : AppCompatActivity() {
     lateinit var binding: RecipeDetailActivityBinding
 
-    fun getStatusBarHeight(context: Context): Int {
-        val screenSizeType: Int = context.getResources().getConfiguration().screenLayout and
+    private fun getStatusBarHeight(context: Context): Int {
+        val screenSizeType: Int = context.resources.configuration.screenLayout and
                 Configuration.SCREENLAYOUT_SIZE_MASK
         var statusbar = 0
         if (screenSizeType != Configuration.SCREENLAYOUT_SIZE_XLARGE) {
             val resourceId: Int =
-                context.getResources().getIdentifier("status_bar_height", "dimen", "android")
+                context.resources.getIdentifier("status_bar_height", "dimen", "android")
             if (resourceId > 0) {
-                statusbar = context.getResources().getDimensionPixelSize(resourceId)
+                statusbar = context.resources.getDimensionPixelSize(resourceId)
             }
         }
         return statusbar
@@ -40,7 +43,7 @@ class RecipeDetailActivity : AppCompatActivity() {
             ConstraintLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         constraintLayoutParam.topMargin = getStatusBarHeight(this)
 
-        Log.d("로그", "onCreate: ${getStatusBarHeight(this)}")
+        Log.d(TAG, "onCreate: ${getStatusBarHeight(this)}")
         val detailIntent = intent
 //
         val recipeDetailInfo = detailIntent.getParcelableArrayListExtra<RecipeInfoData>("list")
@@ -56,21 +59,19 @@ class RecipeDetailActivity : AppCompatActivity() {
         val manual03 = detailIntent.getStringExtra("manual03")
         val manual04 = detailIntent.getStringExtra("manual04")
 
-//        val recipeDetailInfo = detailIntent.getSerializableExtra("list", RecipeInfoData::class.java)
-//        val recipeDetail = detailIntent.getSerializableExtra("changeList")
 
-        Log.d("로그", "recipeDetailInfo: $recipeDetailInfo")
-        Log.d("로그", "recipeName: $recipeName")
-        Log.d("로그", "recipeParts: $recipeParts")
-        Log.d("로그", "recipeFile: $recipeFile")
-        Log.d("로그", "manualIMG01: $manualIMG01")
-        Log.d("로그", "manualIMG02: $manualIMG02")
-        Log.d("로그", "manualIMG03: $manualIMG03")
-        Log.d("로그", "manualIMG04: $manualIMG04")
-        Log.d("로그", "manual01: $manual01")
-        Log.d("로그", "manual02: $manual02")
-        Log.d("로그", "manual03: $manual03")
-        Log.d("로그", "manual04: $manual04")
+        Log.d(TAG, "recipeDetailInfo: $recipeDetailInfo")
+        Log.d(TAG, "recipeName: $recipeName")
+        Log.d(TAG, "recipeParts: $recipeParts")
+        Log.d(TAG, "recipeFile: $recipeFile")
+        Log.d(TAG, "manualIMG01: $manualIMG01")
+        Log.d(TAG, "manualIMG02: $manualIMG02")
+        Log.d(TAG, "manualIMG03: $manualIMG03")
+        Log.d(TAG, "manualIMG04: $manualIMG04")
+        Log.d(TAG, "manual01: $manual01")
+        Log.d(TAG, "manual02: $manual02")
+        Log.d(TAG, "manual03: $manual03")
+        Log.d(TAG, "manual04: $manual04")
 
         with(binding) {
             recipeMenuName.text = recipeName

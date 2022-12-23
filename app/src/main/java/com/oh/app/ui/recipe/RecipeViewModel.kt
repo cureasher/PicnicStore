@@ -1,10 +1,13 @@
 package com.oh.app.ui.recipe
 
-import com.oh.app.ui.recipe.repository.RecipeRepository
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.oh.app.BuildConfig
+import com.oh.app.common.LAST_URL
+import com.oh.app.common.TAG
 import com.oh.app.data.recipe.RecipeInfoData
+import com.oh.app.ui.recipe.repository.RecipeRepository
 import kotlinx.coroutines.*
 
 class RecipeViewModel(private var repository: RecipeRepository) : ViewModel() {
@@ -18,15 +21,16 @@ class RecipeViewModel(private var repository: RecipeRepository) : ViewModel() {
         onError("코루틴내 예외: ${thrownException.localizedMessage}")
     }
 
-    fun getRecipeViewModel(recipeName : String) {
+
+    fun getRecipeViewModel(recipeName: String) {
         job = CoroutineScope(Dispatchers.IO).launch(exceptionHandler) {
             isLoading.postValue(true)
-            val infoResponse = repository.getRecipeInfo(1, 90 ,recipeName) // 레시피 정보
+            val pathUrl = BuildConfig.RCP_API_KEY + LAST_URL
+            val infoResponse = repository.getRecipeInfo(pathUrl, recipeName) // 레시피 정보
+            Log.d(TAG, "getRecipeViewModel: $infoResponse ")
 
             withContext(Dispatchers.Main) {
                 if (infoResponse.isSuccessful) {
-                    /*Log.d("로그", "getRecipeViewModel: $infoResponse")
-                    Log.d("로그", "getRecipeViewModel: ${infoResponse.body()}")*/
                     recipeList.value = infoResponse.body()
                     isLoading.value = false
                 } else {

@@ -1,3 +1,6 @@
+package com.oh.app.ui.recipe.adapter
+
+import RecipeViewHolder
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,10 +11,10 @@ import com.oh.app.databinding.RecipeInfoItemBinding
 import com.oh.app.ui.main.MainActivity
 import com.oh.app.ui.recipe.detail.RecipeDetailActivity
 
-class RecipeRecyclerAdapter(private var recipeList: RecipeInfoData, val owner: MainActivity) :
+class RecipeRecyclerAdapter(recipeList: RecipeInfoData, private val owner: MainActivity) :
     RecyclerView.Adapter<RecipeViewHolder>() {
     private lateinit var binding: RecipeInfoItemBinding
-    private val list = recipeList.COOKRCP01.row
+    private val list = recipeList.cookRcp01.row
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecipeViewHolder {
         binding = RecipeInfoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return RecipeViewHolder(binding)
@@ -21,26 +24,26 @@ class RecipeRecyclerAdapter(private var recipeList: RecipeInfoData, val owner: M
         val recipeItem = list[position]
 
         with(holder.binding) {
-            recipeName.text = recipeItem.RCP_NM
-            Glide.with(this.recipeImage.context).load("""${recipeItem.ATT_FILE_NO_MAIN}""")
+            recipeName.text = recipeItem.rcpNm
+            Glide.with(this.recipeImage.context).load(recipeItem.attFileNoMain)
                 .into(this.recipeImage)
 
             recipeImage.setOnClickListener {
-                var recipeListDetailIntent = Intent(owner, RecipeDetailActivity::class.java)
+                val recipeListDetailIntent = Intent(owner, RecipeDetailActivity::class.java)
                 recipeListDetailIntent.putExtra("list", list)
-                recipeListDetailIntent.putExtra("rcpName", recipeItem.RCP_NM)
-                recipeListDetailIntent.putExtra("rcpParts", recipeItem.RCP_PARTS_DTLS)
-                recipeListDetailIntent.putExtra("rcpFile", recipeItem.ATT_FILE_NO_MAIN)
-                recipeListDetailIntent.putExtra("manualIMG01", recipeItem.MANUAL_IMG01)
-                recipeListDetailIntent.putExtra("manualIMG02", recipeItem.MANUAL_IMG02)
-                recipeListDetailIntent.putExtra("manualIMG03", recipeItem.MANUAL_IMG03)
-                recipeListDetailIntent.putExtra("manualIMG04", recipeItem.MANUAL_IMG04)
-                recipeListDetailIntent.putExtra("manualIMG05", recipeItem.MANUAL_IMG05)
-                recipeListDetailIntent.putExtra("manual01", recipeItem.MANUAL01)
-                recipeListDetailIntent.putExtra("manual02", recipeItem.MANUAL02)
-                recipeListDetailIntent.putExtra("manual03", recipeItem.MANUAL03)
-                recipeListDetailIntent.putExtra("manual04", recipeItem.MANUAL04)
-                recipeListDetailIntent.putExtra("manual05", recipeItem.MANUAL05)
+                recipeListDetailIntent.putExtra("rcpName", recipeItem.rcpNm)
+                recipeListDetailIntent.putExtra("rcpParts", recipeItem.rcpPartsDtls)
+                recipeListDetailIntent.putExtra("rcpFile", recipeItem.attFileNoMain)
+                recipeListDetailIntent.putExtra("manualIMG01", recipeItem.manualImg01)
+                recipeListDetailIntent.putExtra("manualIMG02", recipeItem.manualImg02)
+                recipeListDetailIntent.putExtra("manualIMG03", recipeItem.manualImg03)
+                recipeListDetailIntent.putExtra("manualIMG04", recipeItem.manualImg04)
+                recipeListDetailIntent.putExtra("manualIMG05", recipeItem.manualImg05)
+                recipeListDetailIntent.putExtra("manual01", recipeItem.manual01)
+                recipeListDetailIntent.putExtra("manual02", recipeItem.manual02)
+                recipeListDetailIntent.putExtra("manual03", recipeItem.manual03)
+                recipeListDetailIntent.putExtra("manual04", recipeItem.manual04)
+                recipeListDetailIntent.putExtra("manual05", recipeItem.manual05)
                 owner.startActivity(recipeListDetailIntent)
             }
         }

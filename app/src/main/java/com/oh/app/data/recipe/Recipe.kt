@@ -4,138 +4,140 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
+/**
+ * 레시피 정보를 저장하는 data class
+ */
 @Parcelize
 data class RecipeInfoData(
     @SerializedName("COOKRCP01")
-    val COOKRCP01: COOKRCP01
+    val cookRcp01: COOKRCP01
 ) : Parcelable
 
 @Parcelize
 data class COOKRCP01(
     @SerializedName("RESULT")
-    val RESULT: RESULT = RESULT(),
-    @SerializedName("row")
+    val result: RESULT = RESULT(),
     val row: ArrayList<Row> = arrayListOf(),
     @SerializedName("total_count")
-    val total_count: String = ""
+    val totalCount: String = ""
 ) : Parcelable
 
 @Parcelize
 data class RESULT(
     @SerializedName("CODE")
-    val CODE: String = "",
+    val code: String = "",
     @SerializedName("MSG")
-    val MSG: String = ""
+    val msg: String = ""
 ) : Parcelable
 
 @Parcelize
 data class Row(
     @SerializedName("ATT_FILE_NO_MAIN")
-    val ATT_FILE_NO_MAIN: String = "",
+    val attFileNoMain: String = "",
     @SerializedName("ATT_FILE_NO_MK")
-    val ATT_FILE_NO_MK: String = "",
+    val attFileNoMk: String = "",
     @SerializedName("HASH_TAG")
-    val HASH_TAG: String = "",
+    val hashTag: String = "",
     @SerializedName("INFO_CAR")
-    val INFO_CAR: String = "",
+    val infoCar: String = "",
     @SerializedName("INFO_ENG")
-    val INFO_ENG: String = "",
+    val infoEng: String = "",
     @SerializedName("INFO_FAT")
-    val INFO_FAT: String = "",
+    val infoFat: String = "",
     @SerializedName("INFO_NA")
-    val INFO_NA: String = "",
+    val infoNa: String = "",
     @SerializedName("INFO_PRO")
-    val INFO_PRO: String = "",
+    val infoPro: String = "",
     @SerializedName("INFO_WGT")
-    val INFO_WGT: String = "",
+    val infoWgt: String = "",
     @SerializedName("MANUAL01")
-    val MANUAL01: String = "",
+    val manual01: String = "",
     @SerializedName("MANUAL02")
-    val MANUAL02: String = "",
+    val manual02: String = "",
     @SerializedName("MANUAL03")
-    val MANUAL03: String = "",
+    val manual03: String = "",
     @SerializedName("MANUAL04")
-    val MANUAL04: String = "",
+    val manual04: String = "",
     @SerializedName("MANUAL05")
-    val MANUAL05: String = "",
+    val manual05: String = "",
     @SerializedName("MANUAL06")
-    val MANUAL06: String = "",
+    val manual06: String = "",
     @SerializedName("MANUAL07")
-    val MANUAL07: String = "",
+    val manual07: String = "",
     @SerializedName("MANUAL08")
-    val MANUAL08: String = "",
+    val manual08: String = "",
     @SerializedName("MANUAL09")
-    val MANUAL09: String = "",
+    val manual09: String = "",
     @SerializedName("MANUAL10")
-    val MANUAL10: String = "",
+    val manual10: String = "",
     @SerializedName("MANUAL11")
-    val MANUAL11: String = "",
+    val manual11: String = "",
     @SerializedName("MANUAL12")
-    val MANUAL12: String = "",
+    val manual12: String = "",
     @SerializedName("MANUAL13")
-    val MANUAL13: String = "",
+    val manual13: String = "",
     @SerializedName("MANUAL14")
-    val MANUAL14: String = "",
+    val manual14: String = "",
     @SerializedName("MANUAL15")
-    val MANUAL15: String = "",
+    val manual15: String = "",
     @SerializedName("MANUAL16")
-    val MANUAL16: String = "",
+    val manual16: String = "",
     @SerializedName("MANUAL17")
-    val MANUAL17: String = "",
+    val manual17: String = "",
     @SerializedName("MANUAL18")
-    val MANUAL18: String = "",
+    val manual18: String = "",
     @SerializedName("MANUAL19")
-    val MANUAL19: String = "",
+    val manual19: String = "",
     @SerializedName("MANUAL20")
-    val MANUAL20: String = "",
+    val manual20: String = "",
     @SerializedName("MANUAL_IMG01")
-    val MANUAL_IMG01: String = "",
+    val manualImg01: String = "",
     @SerializedName("MANUAL_IMG02")
-    val MANUAL_IMG02: String = "",
+    val manualImg02: String = "",
     @SerializedName("MANUAL_IMG03")
-    val MANUAL_IMG03: String = "",
+    val manualImg03: String = "",
     @SerializedName("MANUAL_IMG04")
-    val MANUAL_IMG04: String = "",
+    val manualImg04: String = "",
     @SerializedName("MANUAL_IMG05")
-    val MANUAL_IMG05: String = "",
+    val manualImg05: String = "",
     @SerializedName("MANUAL_IMG06")
-    val MANUAL_IMG06: String = "",
+    val manualImg06: String = "",
     @SerializedName("MANUAL_IMG07")
-    val MANUAL_IMG07: String = "",
+    val manualImg07: String = "",
     @SerializedName("MANUAL_IMG08")
-    val MANUAL_IMG08: String = "",
+    val manualImg08: String = "",
     @SerializedName("MANUAL_IMG09")
-    val MANUAL_IMG09: String = "",
+    val manualImg09: String = "",
     @SerializedName("MANUAL_IMG10")
-    val MANUAL_IMG10: String = "",
+    val manualImg10: String = "",
     @SerializedName("MANUAL_IMG11")
-    val MANUAL_IMG11: String = "",
+    val manualImg11: String = "",
     @SerializedName("MANUAL_IMG12")
-    val MANUAL_IMG12: String = "",
+    val manualImg12: String = "",
     @SerializedName("MANUAL_IMG13")
-    val MANUAL_IMG13: String = "",
+    val manualImg13: String = "",
     @SerializedName("MANUAL_IMG14")
-    val MANUAL_IMG14: String = "",
+    val manualImg14: String = "",
     @SerializedName("MANUAL_IMG15")
-    val MANUAL_IMG15: String = "",
+    val manualImg15: String = "",
     @SerializedName("MANUAL_IMG16")
-    val MANUAL_IMG16: String = "",
+    val manualImg16: String = "",
     @SerializedName("MANUAL_IMG17")
-    val MANUAL_IMG17: String = "",
+    val manualImg17: String = "",
     @SerializedName("MANUAL_IMG18")
-    val MANUAL_IMG18: String = "",
+    val manualImg18: String = "",
     @SerializedName("MANUAL_IMG19")
-    val MANUAL_IMG19: String = "",
+    val manualImg19: String = "",
     @SerializedName("MANUAL_IMG20")
-    val MANUAL_IMG20: String = "",
+    val manualImg20: String = "",
     @SerializedName("RCP_NM")
-    val RCP_NM: String = "",
+    val rcpNm: String = "",
     @SerializedName("RCP_PARTS_DTLS")
-    val RCP_PARTS_DTLS: String = "",
+    val rcpPartsDtls: String = "",
     @SerializedName("RCP_PAT2")
-    val RCP_PAT2: String = "",
+    val rcpPat2: String = "",
     @SerializedName("RCP_SEQ")
-    val RCP_SEQ: String = "",
+    val rcpSeq: String = "",
     @SerializedName("RCP_WAY2")
-    val RCP_WAY2: String = ""
+    val rcpWay2: String = ""
 ) : Parcelable
