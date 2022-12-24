@@ -1,10 +1,9 @@
-package com.oh.app.ui.picnic
+package com.oh.app.ui.picnic.store
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.oh.app.data.store.StoreInfo
-import com.oh.app.ui.picnic.repository.StoreRepository
+import com.oh.app.ui.picnic.store.repository.StoreRepository
 import kotlinx.coroutines.*
 
 class StoreViewModel(
@@ -15,13 +14,6 @@ class StoreViewModel(
     val isLoading = MutableLiveData<Boolean>()
     private var job: Job? = null
 
-    fun setStoreList(s :StoreInfo){
-        storeList.value = s
-    }
-    fun getStoreList() : StoreInfo?{
-        Log.d("로그", "getStoreList: ${storeList.value}")
-        return storeList.value
-    }
     private val exceptionHandler = CoroutineExceptionHandler { _, thrownException ->
         onError("코루틴내 예외: ${thrownException.localizedMessage}")
     }
@@ -30,12 +22,7 @@ class StoreViewModel(
         job = CoroutineScope(Dispatchers.IO).launch(exceptionHandler) {
             isLoading.postValue(true)
 
-            var infoResponse = storeRepository.getStoreInfo(areaName) // 식당 자치구 정보
-            Log.d("로그", "getStoreViewModel: 타니? $areaName")
-//            if (guInfo != selectGuInfo){
-//                storeRepository.getStoreInfo(selectGuInfo)
-//            }
-//            KakaoLocalRetrofitService.getInstance()
+            val infoResponse = storeRepository.getStoreInfo(areaName) // 식당 자치구 정보
             withContext(Dispatchers.Main) {
                 if (infoResponse.isSuccessful) {
                     storeList.value = infoResponse.body()
