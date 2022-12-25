@@ -2,63 +2,63 @@ package com.oh.app.data.kakao.local
 
 import com.google.gson.annotations.SerializedName
 
+/**
+ * 위도와 경도값을 받아와서 현재 위치한 구를 알아내는 클래스
+ */
 data class CurrentLocation(
-    @SerializedName("documents")
     val documents: List<Document>,
-    @SerializedName("meta")
     val meta: Meta
 )
 
 data class Document(
-    @SerializedName("address")
     val address: Address,
     @SerializedName("road_address")
-    val road_address: RoadAddress
+    val roadAddress: RoadAddress
 )
 
 data class Address(
     @SerializedName("address_name")
-    val address_name: String,
+    val addressName: String,
     @SerializedName("main_address_no")
-    val main_address_no: String,
+    val mainAddressNo: String,
     @SerializedName("mountain_yn")
-    val mountain_yn: String,
+    val mountainYn: String,
     @SerializedName("region_1depth_name")
-    val region_1depth_name: String,
+    val region1depthName: String,
     @SerializedName("region_2depth_name")
-    val region_2depth_name: String,
+    val region2depthName: String,
     @SerializedName("region_3depth_name")
-    val region_3depth_name: String,
+    val region3depthName: String,
     @SerializedName("sub_address_no")
-    val sub_address_no: String,
+    val subAddressNo: String,
     @SerializedName("zip_code")
-    val zip_code: String
+    val zipCode: String
 )
 
 data class Meta(
     @SerializedName("total_count")
-    val total_count: Int
+    val totalCount: Int
 )
 
 data class RoadAddress(
     @SerializedName("address_name")
-    val address_name: String,
+    val addressName: String,
     @SerializedName("building_name")
-    val building_name: String,
+    val buildingName: String,
     @SerializedName("main_building_no")
-    val main_building_no: String,
+    val mainBuildingNo: String,
     @SerializedName("region_1depth_name")
-    val region_1depth_name: String,
+    val region1depthName: String,
     @SerializedName("region_2depth_name")
-    val region_2depth_name: String,
+    val region2depthName: String,
     @SerializedName("region_3depth_name")
-    val region_3depth_name: String,
+    val region3depthName: String,
     @SerializedName("road_name")
-    val road_name: String,
+    val roadName: String,
     @SerializedName("sub_building_no")
-    val sub_building_no: String,
+    val subBuildingNo: String,
     @SerializedName("underground_yn")
-    val underground_yn: String,
+    val undergroundYn: String,
     @SerializedName("zone_no")
-    val zone_no: String
+    val zoneNo: String
 )

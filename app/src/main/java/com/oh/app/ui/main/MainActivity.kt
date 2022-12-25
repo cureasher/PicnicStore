@@ -1,16 +1,13 @@
-package com.oh.app
+package com.oh.app.ui.main
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.tabs.TabLayout
-import com.oh.app.common.PicnicPermissionCheck
-import com.oh.app.common.PicnicPreferenceManager
+import com.oh.app.R
 import com.oh.app.databinding.ActivityMainBinding
 import com.oh.app.ui.picnic.PicnicFragment
 import com.oh.app.ui.recipe.RecipeFragment
-
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -19,7 +16,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         val picnicFragment = PicnicFragment()
         val recipeFragment = RecipeFragment()
 
@@ -30,13 +26,9 @@ class MainActivity : AppCompatActivity() {
             ft.commit()
         }
         with(binding) {
+            // 탭레이아웃 이벤트 리스너
             tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                 override fun onTabSelected(tab: TabLayout.Tab) {
-                    val param = when (tab.position) {
-                        0 -> "서울 피크닉"
-                        1 -> "레시피"
-                        else -> throw IllegalStateException("Unexpected value: " + tab.position)
-                    }
                     val ft = supportFragmentManager.beginTransaction()
                     var position = tab.position
                     var selected: Fragment? = picnicFragment
@@ -55,37 +47,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onTabUnselected(tab: TabLayout.Tab?) {}
-
                 override fun onTabReselected(tab: TabLayout.Tab?) {}
             })
-        }
-    }
-
-    private lateinit var permissionCheck: PicnicPermissionCheck
-//    override fun onResume() {
-//        super.onResume()
-//        if (!PicnicPreferenceManager.getInstance().isPermission) {
-//            permissionCheck()
-//        }
-//    }
-
-//    private fun permissionCheck() {
-//        permissionCheck = PicnicPermissionCheck(applicationContext, this)
-//        if (!permissionCheck.currentAppCheckPermission()) {
-//            permissionCheck.currentAppRequestPermissions()
-//        }
-//    }
-
-    @SuppressLint("MissingSuperCall")
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        if (!permissionCheck.currentAppPermissionResult(requestCode, grantResults)) {
-            permissionCheck.currentAppRequestPermissions()
-        } else {
-            PicnicPreferenceManager.getInstance().isPermission = true
         }
     }
 }

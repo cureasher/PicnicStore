@@ -7,6 +7,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 
+/**
+ * ViewBinding 을 프래그먼트 세팅하는 기초코드(중복제거용)
+ */
 abstract class BaseFragment<B : ViewBinding> : Fragment() {
 
     private var _binding: B? = null

@@ -5,14 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/light_blue"
-    tools:context=".SplashActivity">
+    tools:context=".ui.splash.SplashActivity">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/bmhanna11"
         android:gravity="center"
-        android:text="Picnic\nStore"
+        android:text="@string/picnic_store"
         android:textColor="@color/dark_blue"
         android:textSize="100sp"
         android:textStyle="normal"
